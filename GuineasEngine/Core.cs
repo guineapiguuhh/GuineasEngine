@@ -26,16 +26,11 @@ public class Core : Game
         Content.RootDirectory = @"Content";
     }
 
-    protected override void LoadContent()
-    {
-        base.LoadContent();
-        SpriteBatch = new SpriteBatch(GraphicsDevice);
-    }
-
     protected override void Initialize()
     {
         base.Initialize();
         GraphicsDevice = base.GraphicsDevice;
+        SpriteBatch = new SpriteBatch(GraphicsDevice);
     }
 
     protected override void Update(GameTime gameTime)

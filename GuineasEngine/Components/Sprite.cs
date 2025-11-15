@@ -1,10 +1,9 @@
-using GuineasEngine.Utils;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace GuineasEngine.Components;
 
-public class Sprite : Node2D
+public class Sprite : Node
 {
     public Texture2D Texture;
 
@@ -13,9 +12,13 @@ public class Sprite : Node2D
         Texture = texture;
     }
 
+    public void CenterOrigin()
+    {
+        Origin = new Vector2(Texture.Width, Texture.Height) / 2f;
+    }
+
     public override void Draw()
     {
-        base.Draw();
         DrawTexture(
             Texture,
             Vector2.Zero,
@@ -26,5 +29,6 @@ public class Sprite : Node2D
             SpriteEffects.None,
             0f
         );
+        base.Draw();
     }
 }

@@ -3,50 +3,22 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace GuineasEngine;
 
+// TODO: Polimento e fazer a posição relativa funcionar
+
 public class Node : Components.IUpdateable, Components.IDrawable
 {
     public string Name = "Node";
+    public bool Independent = false;
 
     public Node Parent { get; internal set; }
 
     protected List<Node> Children { get; set; }
+    public int ChildrenCount => Children.Count;
 
     #region Global
-    public Vector2 GlobalPosition
-    {
-        get
-        {
-            if (Parent is not null)
-            {
-                return ApplyPoint(Parent.GlobalPosition + Position, Parent.GlobalAngle);
-            }
-            return Position;
-        }
-    }
-
-    public Vector2 GlobalScale
-    {
-        get
-        {
-            if (Parent is not null)
-            {
-                return Parent.GlobalScale * Scale;
-            }
-            return Scale;
-        }
-    }
-
-    public float GlobalAngle
-    {
-        get
-        {
-            if (Parent is not null)
-            {
-                return Parent.Angle + Angle;
-            }
-            return Angle;
-        }
-    }
+    public Vector2 GlobalPosition { get; private set; }
+    public Vector2 GlobalScale { get; private set; }
+    public float GlobalAngle { get; private set; }
     #endregion
 
     public Vector2 Position = Vector2.Zero;
@@ -66,18 +38,27 @@ public class Node : Components.IUpdateable, Components.IDrawable
 
     public void AddChild(Node child)
     {
-        child.Parent = this;
-        Children.Add(child);
+        InsertChild(ChildrenCount, child);
     }
 
     public void InsertChild(int index, Node child)
     {
+        if (child.Parent is not null)
+        {
+            child.Parent.RemoveChild(child);
+        }
+        if (child == this)
+        {
+            throw new Exception();
+        }
         child.Parent = this;
         Children.Insert(index, child);
     }
 
     public void RemoveChild(Node child)
     {
+        if (!Children.Contains(child)) return;
+
         child.Parent = null;
         Children.Remove(child);
     }
@@ -90,19 +71,42 @@ public class Node : Components.IUpdateable, Components.IDrawable
         }
     }
 
-    private Vector2 ApplyPoint(Vector2 value, float angle)
-    {
-        return new Vector2();
-    }
-
     public virtual void Update(float deltaTime)
     {
+        CalcGlobalPosition();
         ForEach((child) => child.Update(deltaTime));
     }
 
     public virtual void Draw()
     {
         ForEach((child) => child.Draw());
+    }
+
+    private void CalcGlobalPosition()
+    {
+        if (Parent is null || Independent)
+        {
+            GlobalAngle = Angle;
+            GlobalScale = Scale;
+            GlobalPosition = Position;
+            return;
+        }
+
+        GlobalAngle = Parent.GlobalAngle + Angle;
+        GlobalScale = Parent.GlobalScale * Scale;
+
+        var angle = Parent.GlobalAngle;
+
+        var x = Position.X;
+        var y = Position.Y;
+
+        var sx = Parent.GlobalScale.X;
+        var sy = Parent.GlobalScale.Y;
+
+        var x2 = x * sx * float.Cos(angle) - y * sy * float.Sin(angle);
+        var y2 = x * sx * float.Sin(angle) + y * sy * float.Cos(angle);
+
+        GlobalPosition = Parent.GlobalPosition + new Vector2(x2, y2);
     }
     
     public override string ToString()
@@ -138,7 +142,7 @@ public class Node : Components.IUpdateable, Components.IDrawable
         float layerDepth
     )
     {
-        Core.SpriteBatch.Draw(texture, destinationRectangle, sourceRectangle, Color, angle + GlobalAngle, origin, effects, layerDepth);
+        Core.SpriteBatch.Draw(texture, destinationRectangle, sourceRectangle, Color, angle + GlobalAngle, Origin + origin, effects, layerDepth);
     }
 
     protected void DrawTexture(
@@ -152,7 +156,7 @@ public class Node : Components.IUpdateable, Components.IDrawable
         float layerDepth
     )
     {
-        Core.SpriteBatch.Draw(texture, position, sourceRectangle, Color, angle, origin, new Vector2(scale, scale), effects, layerDepth);
+        DrawTexture(texture, position, sourceRectangle, angle, origin, new Vector2(scale, scale), effects, layerDepth);
     }
 
     protected void DrawTexture(
@@ -166,7 +170,7 @@ public class Node : Components.IUpdateable, Components.IDrawable
         float layerDepth
     )
     {
-        Core.SpriteBatch.Draw(texture, position + GlobalPosition, sourceRectangle, Color, angle + GlobalAngle, origin, scale + GlobalScale, effects, layerDepth);
+        Core.SpriteBatch.Draw(texture, position + GlobalPosition, sourceRectangle, Color, angle + GlobalAngle, Origin + origin, scale + GlobalScale, effects, layerDepth);
     }
     #endregion
 }
