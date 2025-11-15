@@ -3,11 +3,9 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace GuineasEngine;
 
-// TODO: Polimento e fazer a posição relativa funcionar
-
-public class Node : Components.IUpdateable, Components.IDrawable
+public class Node : Components.IUpdateable, Components.IDrawable, IDisposable
 {
-    public string Name = "Node";
+    public string Name;
     public bool Independent = false;
 
     public Node Parent { get; internal set; }
@@ -30,9 +28,11 @@ public class Node : Components.IUpdateable, Components.IDrawable
     public SpriteEffects Effect = SpriteEffects.None;
 
     public float LayerDepth = 0f;
-
-    public Node()
+    
+    public Node() : this("Node") {}
+    public Node(string name)
     {
+        Name = name;
         Children = [];
     }
 
@@ -43,21 +43,19 @@ public class Node : Components.IUpdateable, Components.IDrawable
 
     public void InsertChild(int index, Node child)
     {
-        if (child.Parent is not null)
-        {
-            child.Parent.RemoveChild(child);
-        }
+        child.Parent?.RemoveChild(child);
         if (child == this)
         {
-            throw new Exception();
+            throw new Exception("You can't add him as your own child.");
         }
+
         child.Parent = this;
         Children.Insert(index, child);
     }
 
     public void RemoveChild(Node child)
     {
-        if (!Children.Contains(child)) return;
+        if (Children.Contains(child)) return;
 
         child.Parent = null;
         Children.Remove(child);
@@ -107,6 +105,14 @@ public class Node : Components.IUpdateable, Components.IDrawable
         var y2 = x * sx * float.Sin(angle) + y * sy * float.Cos(angle);
 
         GlobalPosition = Parent.GlobalPosition + new Vector2(x2, y2);
+    }
+
+    protected virtual void Dispose(bool disposing) {}
+
+    public void Dispose()
+    {
+        Dispose();
+        GC.SuppressFinalize(this);
     }
     
     public override string ToString()

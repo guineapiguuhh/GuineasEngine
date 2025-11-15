@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace GuineasEngine;
@@ -10,6 +11,7 @@ public class Core : Game
     public static GraphicsDeviceManager Graphics { get; private set; }
     public static new GraphicsDevice GraphicsDevice { get; private set; }
 
+    public static new ContentManager Content { get; private set; }
     public static SpriteBatch SpriteBatch { get; private set; }
 
     public static float DeltaTime { get; private set; } = 0f;
@@ -18,11 +20,13 @@ public class Core : Game
     {
         if (Instance is not null)
         {
-            throw new Exception();
+            throw new Exception("Can't start more than one instance");
         }
         Instance = this;
 
         Graphics = new GraphicsDeviceManager(this);
+
+        Content = base.Content;
         Content.RootDirectory = @"Content";
     }
 

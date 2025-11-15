@@ -5,9 +5,13 @@ namespace GuineasEngine.Components;
 
 public class Sprite : Node
 {
-    public Texture2D Texture;
+    protected Texture2D Texture;
 
-    public Sprite(Texture2D texture)
+    public float Width => Texture.Width;
+    public float Height => Texture.Height;
+
+    public Sprite(Texture2D texture) : this("Sprite", texture) {}
+    public Sprite(string name, Texture2D texture) : base(name)
     {
         Texture = texture;
     }
