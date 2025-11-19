@@ -1,3 +1,4 @@
+using GuineasEngine.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -5,15 +6,22 @@ namespace GuineasEngine.Components;
 
 public class Sprite : Node
 {
-    protected Texture2D Texture;
+    protected TextureRegion Texture;
 
-    public float Width => Texture.Width;
-    public float Height => Texture.Height;
+    public float Width = 0f;
+    public float Height = 0f;
 
-    public Sprite(Texture2D texture) : this("Sprite", texture) {}
-    public Sprite(string name, Texture2D texture) : base(name)
+    public Color Color = Color.White;
+    public SpriteEffects Effects = SpriteEffects.None;
+
+    public Sprite() : this("Sprite") {}
+    public Sprite(string name) : base(name) {}
+
+    public void LoadTexture(Texture2D texture) => LoadTexture(new TextureRegion(texture));
+    public void LoadTexture(TextureRegion texture)
     {
         Texture = texture;
+        UpdateSize();
     }
 
     public void CenterOrigin()
@@ -21,16 +29,22 @@ public class Sprite : Node
         Origin = new Vector2(Texture.Width, Texture.Height) / 2f;
     }
 
+    public void UpdateSize()
+    {
+        Width = Texture.Width * Scale.X;
+        Height = Texture.Height * Scale.Y;
+    }
+
     public override void Draw()
     {
-        DrawTexture(
-            Texture,
-            Vector2.Zero,
-            new Rectangle(0, 0, Texture.Width, Texture.Height),
-            0f,
-            Vector2.Zero,
-            Vector2.Zero,
-            SpriteEffects.None,
+        Texture.Draw(
+            Core.SpriteBatch,
+            GlobalPosition,
+            Color,
+            GlobalAngle,
+            Origin,
+            GlobalScale,
+            Effects,
             0f
         );
         base.Draw();

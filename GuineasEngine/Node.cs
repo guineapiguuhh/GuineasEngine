@@ -1,34 +1,12 @@
+using GuineasEngine.Components;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace GuineasEngine;
 
 public class Node : Components.IUpdateable, Components.IDrawable, IDisposable
 {
-    public string Name;
-    public bool Independent = false;
+    public string Name = string.Empty;
 
-    public Node Parent { get; internal set; }
-
-    protected List<Node> Children { get; set; }
-    public int ChildrenCount => Children.Count;
-
-    #region Global
-    public Vector2 GlobalPosition { get; private set; }
-    public Vector2 GlobalScale { get; private set; }
-    public float GlobalAngle { get; private set; }
-    #endregion
-
-    public Vector2 Position = Vector2.Zero;
-    public Vector2 Origin = Vector2.Zero;
-    public Vector2 Scale = Vector2.One;
-    public float Angle = 0f;
-
-    public Color Color = Color.White;
-    public SpriteEffects Effect = SpriteEffects.None;
-
-    public float LayerDepth = 0f;
-    
     public Node() : this("Node") {}
     public Node(string name)
     {
@@ -36,51 +14,15 @@ public class Node : Components.IUpdateable, Components.IDrawable, IDisposable
         Children = [];
     }
 
-    public void AddChild(Node child)
-    {
-        InsertChild(ChildrenCount, child);
-    }
+    #region Transform
+    #region Global Transform
+    public bool Independent { get; set; } = false;
 
-    public void InsertChild(int index, Node child)
-    {
-        child.Parent?.RemoveChild(child);
-        if (child == this)
-        {
-            throw new Exception("You can't add him as your own child.");
-        }
+    public Vector2 GlobalPosition { get; private set; }
+    public Vector2 GlobalScale { get; private set; }
+    public float GlobalAngle { get;  private set; }
 
-        child.Parent = this;
-        Children.Insert(index, child);
-    }
-
-    public void RemoveChild(Node child)
-    {
-        if (Children.Contains(child)) return;
-
-        child.Parent = null;
-        Children.Remove(child);
-    }
-
-    public void ForEach(Action<Node> action)
-    {
-        for (int i = 0; i < Children.Count; i++)
-        {
-            action(Children[i]);
-        }
-    }
-
-    public virtual void Update(float deltaTime)
-    {
-        CalcGlobalPosition();
-        ForEach((child) => child.Update(deltaTime));
-    }
-
-    public virtual void Draw()
-    {
-        ForEach((child) => child.Draw());
-    }
-
-    private void CalcGlobalPosition()
+    private void UpdateGlobalTransform()
     {
         if (Parent is null || Independent)
         {
@@ -106,77 +48,116 @@ public class Node : Components.IUpdateable, Components.IDrawable, IDisposable
 
         GlobalPosition = Parent.GlobalPosition + new Vector2(x2, y2);
     }
+    #endregion
+    public Vector2 Position = Vector2.Zero;
+    public Vector2 Origin = Vector2.Zero;
+    public Vector2 Scale = Vector2.One;
+    public float Angle { get; set; } = 0f;
+
+    public bool IsVisible { get; set; } = true;
+
+    public void LookAt(Vector2 value)
+    {
+        var dx = Position.X - value.X;
+        var dy = Position.Y - value.Y;
+
+        Angle = float.Atan2(dy, dx);
+    }
+    #endregion
+
+    #region Virtual methods
+    public virtual void Update(float deltaTime)
+    {
+        UpdateGlobalTransform();
+        ForEach((child) => child.Update(deltaTime));
+    }
+
+    public virtual void Draw()
+    {
+        ForEach((child) =>
+        {
+            if (child.IsVisible) child.Draw();
+        });
+    }
 
     protected virtual void Dispose(bool disposing) {}
-
     public void Dispose()
     {
-        Dispose();
+        Dispose(true);
         GC.SuppressFinalize(this);
     }
-    
+
     public override string ToString()
     {
-        return Name;
+        return GetType().Name + $"({Name})";
+    }
+    #endregion
+
+    #region Composition system
+    public Node Parent { get; internal set; }
+    protected List<Node> Children { get; set; }
+    public int ChildrenCount => Children.Count;
+
+    public Node GetChild(int index) => Children[index];
+
+    public Node GetChildByName(string name)
+    {
+        for (int i = 0; i < ChildrenCount; i++)
+        {
+            var child = GetChild(i);
+            if (child.Name == name) return child;
+        }
+        return null;
     }
 
-    #region Draw
-    protected void DrawTexture(
-        Texture2D texture,
-        Rectangle destinationRectangle
-    )
+    public bool ContainsChild(Node child) => Children.Contains(child);
+
+    public bool ContainsChildByName(string name) => Children.Contains(GetChildByName(name));
+
+    public List<Node> GetChildren() => GetChildren(false);
+
+    public List<Node> GetChildren(bool includeInternal)
     {
-        Core.SpriteBatch.Draw(texture, destinationRectangle, Color);
+        if (!includeInternal) return Children;
+
+        var internalChildren = new List<Node>();
+        for (int i = 0; i < ChildrenCount; i++)
+        {
+            var child = GetChild(i);
+            internalChildren.Add(child);
+
+            var children = child.GetChildren(false);
+            for (int ii = 0; ii < child.ChildrenCount; ii++)
+                internalChildren.Add(children[ii]);
+        }
+        return internalChildren;
     }
 
-    protected void DrawTexture(
-        Texture2D texture,
-        Rectangle destinationRectangle,
-        Rectangle sourceRectangle
-    )
+    public void ForEach(Action<Node> action)
     {
-        Core.SpriteBatch.Draw(texture, destinationRectangle, sourceRectangle, Color);
+        for (int i = 0; i < ChildrenCount; i++)
+            action(GetChild(i));
     }
 
-    protected void DrawTexture(
-        Texture2D texture,
-        Rectangle destinationRectangle,
-        Rectangle sourceRectangle,
-        float angle,
-        Vector2 origin,
-        SpriteEffects effects,
-        float layerDepth
-    )
+    public void AddChild(Node child) => InsertChild(ChildrenCount, child);
+
+    public void InsertChild(int index, Node child)
     {
-        Core.SpriteBatch.Draw(texture, destinationRectangle, sourceRectangle, Color, angle + GlobalAngle, Origin + origin, effects, layerDepth);
+        if (child == this)
+            throw new Exception("You can't add him as your own child.");
+        
+        child.Parent?.RemoveChild(child);
+        child.Parent = this;
+        Children.Insert(index, child);
     }
 
-    protected void DrawTexture(
-        Texture2D texture,
-        Vector2 position,
-        Rectangle sourceRectangle,
-        float angle,
-        Vector2 origin,
-        float scale,
-        SpriteEffects effects,
-        float layerDepth
-    )
+    public void RemoveChild(Node child)
     {
-        DrawTexture(texture, position, sourceRectangle, angle, origin, new Vector2(scale, scale), effects, layerDepth);
-    }
+        if (!ContainsChild(child))
+            throw new Exception("You can't remove something that doesn't contain it.");
 
-    protected void DrawTexture(
-        Texture2D texture,
-        Vector2 position,
-        Rectangle sourceRectangle,
-        float angle,
-        Vector2 origin,
-        Vector2 scale,
-        SpriteEffects effects,
-        float layerDepth
-    )
-    {
-        Core.SpriteBatch.Draw(texture, position + GlobalPosition, sourceRectangle, Color, angle + GlobalAngle, Origin + origin, scale + GlobalScale, effects, layerDepth);
+        child.Parent = null;
+        Children.Remove(child);   
     }
     #endregion
 }
