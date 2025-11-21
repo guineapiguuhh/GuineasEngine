@@ -1,8 +1,10 @@
-/.config
-/.vscode
-/.editorconfig
+# VSCODE
+.vscode
 
-/Test
+# CSHARP
+.config
+.editorconfig
 
-/GuineasEngine/bin
-/GuineasEngine/obj
+# BUILD
+bin
+obj
