@@ -3,15 +3,13 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace GuineasEngine.Graphics;
 
-// TODO: revisão
-
 public class TextureRegion
 {
-    public Texture2D Texture;
+    public readonly Texture2D Texture;
     public Rectangle Source;
 
-    public int Width => Texture.Width;
-    public int Height => Texture.Height;
+    public readonly int Width;
+    public readonly int Height;
 
     public TextureRegion(Texture2D texture) 
         : this(texture, new Rectangle(0, 0, texture.Width, texture.Height)) {}
@@ -22,6 +20,8 @@ public class TextureRegion
     public TextureRegion(Texture2D texture, Rectangle source)
     {
         Texture = texture;
+        Width = Texture.Width;
+        Height = Texture.Height;
         Source = source;
     }
 

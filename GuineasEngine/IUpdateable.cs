@@ -1,4 +1,4 @@
-namespace GuineasEngine.Components;
+namespace GuineasEngine;
 
 public interface IUpdateable
 {

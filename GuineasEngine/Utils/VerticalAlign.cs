@@ -1,8 +1,8 @@
 namespace GuineasEngine.Utils;
 
-public enum VerticalAlign
+public enum VerticalAlign : int
 {
-    Top,
-    Middle,
-    Bottom
+    Top = 0,
+    Middle = 1,
+    Bottom = 2
 }

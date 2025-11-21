@@ -12,7 +12,7 @@ public enum MouseButtons
     X2
 }
 
-public class MouseData : Components.IUpdateable
+public class MouseData : IUpdateable
 {
     protected MouseState PreviousState;
     protected MouseState State;
@@ -23,13 +23,6 @@ public class MouseData : Components.IUpdateable
         set => Mouse.SetPosition(value.X, value.Y);
     }
 
-    private MouseCursor cursor;
-    public MouseCursor Cursor
-    {
-        get => cursor;
-        set => Mouse.SetCursor(cursor = value);
-    }
-
     public float ScrollWheel => State.ScrollWheelValue;
     public float HorizontalScrollWheel => State.HorizontalScrollWheelValue;
 
@@ -37,6 +30,11 @@ public class MouseData : Components.IUpdateable
     {
         PreviousState = State;
         State = Mouse.GetState();
+    }
+
+    public void SetCursor(MouseCursor cursor)
+    {
+        Mouse.SetCursor(cursor);
     }
 
     public bool IsPressed(MouseButtons button) => button switch

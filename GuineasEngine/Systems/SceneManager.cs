@@ -1,4 +1,5 @@
 using GuineasEngine.Components;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace GuineasEngine.Systems;
 
@@ -7,7 +8,10 @@ public class SceneManager : IUpdateable, IDrawable
     public Scene Current { get; private set; }
     public Scene Next { get; private set; }
 
-    public bool HasTransition { get; private set; } = false;
+    public bool HasTransition => InTransition is not null || OutTransition is not null;
+
+    public Transition InTransition;
+    public Transition OutTransition;
 
     public void Reload()
     {
@@ -43,8 +47,8 @@ public class SceneManager : IUpdateable, IDrawable
         Current?.Update(deltaTime);
     }
 
-    public virtual void Draw()
+    public virtual void Draw(SpriteBatch spriteBatch)
     {
-        Current?.Draw();
+        Current?.Draw(spriteBatch);
     }
 }

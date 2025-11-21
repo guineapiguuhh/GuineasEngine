@@ -1,6 +1,5 @@
 namespace GuineasEngine.Utils.Math;
 
-public partial class MathExtension
-{
-    
-}
+// TODO: Adicionar alguma coisa aqui
+
+public static partial class MathExtension;

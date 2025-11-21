@@ -1,4 +1,3 @@
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 
 namespace GuineasEngine.Components;
@@ -20,13 +19,6 @@ public abstract class Scene : Node
     public virtual void Unload()
     {
         Content?.Unload();
-    }
-
-    public override void Draw()
-    {
-        Core.SpriteBatch.Begin();
-        base.Draw();
-        Core.SpriteBatch.End();
     }
 
     protected override void Dispose(bool disposing)

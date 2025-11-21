@@ -2,7 +2,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace GuineasEngine.Input;
 
-public class KeyboardData : Components.IUpdateable
+public class KeyboardData : IUpdateable
 {
     protected KeyboardState PreviousState;
     protected KeyboardState State;

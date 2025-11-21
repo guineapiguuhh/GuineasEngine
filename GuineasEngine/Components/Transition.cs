@@ -1,5 +1,7 @@
 namespace GuineasEngine.Components;
 
+// TODO: implementar o sistema de transição
+
 public enum TransitionState
 {
     Playing,

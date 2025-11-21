@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace GuineasEngine.Input;
 
-public class GamePadData(PlayerIndex index) : Components.IUpdateable
+public class GamePadData : IUpdateable
 {
     protected GamePadState PreviousState;
     protected GamePadState State;
@@ -13,7 +13,13 @@ public class GamePadData(PlayerIndex index) : Components.IUpdateable
 
     public bool IsConnected => State.IsConnected;
     public int PacketNumber => State.PacketNumber;
-    public PlayerIndex Index = index;
+    public PlayerIndex Index;
+
+    public GamePadData(int index) : this((PlayerIndex)index) {}
+    public GamePadData(PlayerIndex index)
+    {
+        Index = index;
+    }
 
     public void Update(float deltaTime)
     {

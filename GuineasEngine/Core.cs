@@ -1,5 +1,6 @@
 using GuineasEngine.Audio;
 using GuineasEngine.Components;
+using GuineasEngine.Graphics;
 using GuineasEngine.Input;
 using GuineasEngine.Systems;
 using Microsoft.Xna.Framework;
@@ -20,21 +21,12 @@ public class Core : Game
     public static new ContentManager Content { get; private set; }
     public static SpriteBatch SpriteBatch { get; private set; }
 
-    public static InputManager Input { get; private set; }
+    public static MouseData Mouse { get; private set; }
+    public static KeyboardData Keyboard { get; private set; }
+    public static GamePadData[] GamePads { get; private set; }
+
     public static SceneManager SceneManager { get; private set; }
     public static Scene InitScene { get; private set; }
-
-    public static double maxFPS { get; set; } = 0;
-    public static double MaxFPS
-    {
-        get => maxFPS;
-        set
-        {
-            maxFPS = value;
-            Instance.IsFixedTimeStep = maxFPS > 0;
-            Instance.TargetElapsedTime = TimeSpan.FromSeconds(1 / maxFPS);
-        }
-    }
 
     public static int Width
     {
@@ -66,7 +58,15 @@ public class Core : Game
         set => Window.IsBorderless = value;
     }
 
-    public static Color BackgroundColor { get; set; } = Color.CornflowerBlue;
+    public static Color BackgroundColor { get; set; } = Color.Black;
+
+    public static float DeltaTime { get; private set; } = 0f;
+    
+    public static void SetMaxFPS(double max)
+    {
+        Instance.IsFixedTimeStep = max > 0;
+        Instance.TargetElapsedTime = TimeSpan.FromSeconds(1 / max);
+    }
 
     public Core(string title, Scene initScene, int width, int height, bool isFullScreen)
     {
@@ -86,7 +86,7 @@ public class Core : Game
         IsResizable = false;
         IsBorderless = false;
         IsMouseVisible = true;
-        MaxFPS = 60;
+        SetMaxFPS(60);
 
         Content = base.Content;
         Content.RootDirectory = @"Content";
@@ -100,18 +100,30 @@ public class Core : Game
 
         GraphicsDevice = base.GraphicsDevice;
         SpriteBatch = new SpriteBatch(GraphicsDevice);
-        
-        Input = new InputManager();
+
+        Mouse = new MouseData();
+        Keyboard = new KeyboardData();
+        GamePads = [
+            new GamePadData(PlayerIndex.One),
+            new GamePadData(PlayerIndex.Two),
+            new GamePadData(PlayerIndex.Three),
+            new GamePadData(PlayerIndex.Four),
+        ];
+
         SceneManager = new SceneManager();
         SceneManager.Switch(InitScene);
     }
-
-    public static float DeltaTime { get; private set; } = 0f;
 
     protected override void Update(GameTime gameTime)
     {
         base.Update(gameTime);
         DeltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+        Mouse.Update(DeltaTime);
+        Keyboard.Update(DeltaTime);
+        for (int i = 0; i < GamePads.Length; i++)
+            GamePads[i].Update(DeltaTime);
+
         SceneManager.Update(DeltaTime);
     }
 
@@ -119,6 +131,10 @@ public class Core : Game
     {
         base.Draw(gameTime);
         GraphicsDevice.Clear(BackgroundColor);
-        SceneManager.Draw();
+        SpriteBatch.Begin(
+            SpriteSortMode.Deferred
+        );
+        SceneManager.Draw(SpriteBatch);
+        SpriteBatch.End();
     }
 }

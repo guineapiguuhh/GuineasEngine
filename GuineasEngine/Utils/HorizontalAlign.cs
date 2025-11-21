@@ -1,8 +1,8 @@
 namespace GuineasEngine.Utils;
 
-public enum HorizontalAlign
+public enum HorizontalAlign : int
 {
-    Left,
-    Middle,
-    Right
+    Left = 0,
+    Middle = 1,
+    Right = 2
 }
