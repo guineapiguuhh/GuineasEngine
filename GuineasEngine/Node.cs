@@ -44,7 +44,7 @@ public class Node : IUpdateable, IDrawable, IDisposable
 
     #region Composition system
     public Node Parent { get; internal set; }
-    protected List<Node> Children { get; set; }
+    private List<Node> Children { get; set; }
     public int ChildrenCount => Children.Count;
 
     public Node GetChild(int index) => Children[index];
