@@ -5,8 +5,6 @@ VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GuineasEngine", "GuineasEngine\GuineasEngine.csproj", "{CDEE2868-8138-8EAA-1326-E013DE0646A7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{DB13532A-64AC-417C-B718-D7A8A4150771}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,18 +27,6 @@ Global
 		{CDEE2868-8138-8EAA-1326-E013DE0646A7}.Release|x64.Build.0 = Release|Any CPU
 		{CDEE2868-8138-8EAA-1326-E013DE0646A7}.Release|x86.ActiveCfg = Release|Any CPU
 		{CDEE2868-8138-8EAA-1326-E013DE0646A7}.Release|x86.Build.0 = Release|Any CPU
-		{DB13532A-64AC-417C-B718-D7A8A4150771}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DB13532A-64AC-417C-B718-D7A8A4150771}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DB13532A-64AC-417C-B718-D7A8A4150771}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{DB13532A-64AC-417C-B718-D7A8A4150771}.Debug|x64.Build.0 = Debug|Any CPU
-		{DB13532A-64AC-417C-B718-D7A8A4150771}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{DB13532A-64AC-417C-B718-D7A8A4150771}.Debug|x86.Build.0 = Debug|Any CPU
-		{DB13532A-64AC-417C-B718-D7A8A4150771}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DB13532A-64AC-417C-B718-D7A8A4150771}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DB13532A-64AC-417C-B718-D7A8A4150771}.Release|x64.ActiveCfg = Release|Any CPU
-		{DB13532A-64AC-417C-B718-D7A8A4150771}.Release|x64.Build.0 = Release|Any CPU
-		{DB13532A-64AC-417C-B718-D7A8A4150771}.Release|x86.ActiveCfg = Release|Any CPU
-		{DB13532A-64AC-417C-B718-D7A8A4150771}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

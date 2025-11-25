@@ -1,8 +1,5 @@
-using GuineasEngine.Audio;
 using GuineasEngine.Components;
-using GuineasEngine.Graphics;
 using GuineasEngine.Input;
-using GuineasEngine.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -24,9 +21,6 @@ public class Core : Game
     public static MouseData Mouse { get; private set; }
     public static KeyboardData Keyboard { get; private set; }
     public static GamePadData[] GamePads { get; private set; }
-
-    public static SceneManager SceneManager { get; private set; }
-    public static Scene InitScene { get; private set; }
 
     public static int Width
     {
@@ -58,21 +52,93 @@ public class Core : Game
         set => Window.IsBorderless = value;
     }
 
+    public static Random Random { get; private set; }
+
     public static Color BackgroundColor { get; set; } = Color.Black;
 
     public static float DeltaTime { get; private set; } = 0f;
-    
-    public static void SetMaxFPS(double max)
-    {
-        Instance.IsFixedTimeStep = max > 0;
-        Instance.TargetElapsedTime = TimeSpan.FromSeconds(1 / max);
+
+    static Scene CurrentScene { get; set; }
+    static Scene NextScene { get; set; }
+
+    public static Scene Scene 
+    { 
+        get => CurrentScene;
+        set
+        {
+            if (value is null) throw new NullReferenceException();
+            NextScene = value;
+            DoTransition = true;
+        }
     }
 
-    public Core(string title, Scene initScene, int width, int height, bool isFullScreen)
+    static void SetScene(Scene scene) 
+    {
+        CurrentScene.Dispose();
+        GC.Collect();
+
+        CurrentScene = scene;
+        CurrentScene.Load();
+    }
+
+    static Transition _inTransition { get; set; }
+    public static Transition InTransition
+    { 
+        get => _inTransition;
+        set
+        {
+            if (_inTransition == value) return;
+            _inTransition?.Unload();
+            _inTransition = value;
+            _inTransition.Load();
+            _inTransition.OnStop += (_, _) => {
+                SetScene(NextScene);
+                NextScene = null;
+                OutTransition?.Play();
+            };
+        } 
+    }
+
+    static Transition _outTransition { get; set; }
+    public static Transition OutTransition
+    { 
+        get => _outTransition;
+        set
+        {
+            if (_outTransition == value) return;
+            _outTransition?.Unload();
+            _outTransition = value;
+            _outTransition.Load();
+            _outTransition.Reverse = true;
+        } 
+    }
+
+    static bool DoTransition { get; set; } = false;
+
+    static void StartSceneTransition()
+    {
+        DoTransition = false;
+        if (InTransition is null)
+        {
+            SetScene(NextScene);
+            NextScene = null;
+            OutTransition?.Play();
+            return;
+        }
+        InTransition?.Play();
+    }
+    
+    public static void SetFPSLimit(double max)
+    {
+        Instance.IsFixedTimeStep = max > 0;
+        if (Instance.IsFixedTimeStep) Instance.TargetElapsedTime = TimeSpan.FromSeconds(1 / max);
+    }
+
+    public Core(string title, Scene initScene, string contentDirectory, int width, int height, bool isFullScreen)
     {
         if (Instance is not null)
         {
-            throw new Exception("Can't start more than one instance");
+            throw new InvalidOperationException("Can't initialize the Core more than once.");
         }
         Instance = this;
 
@@ -86,12 +152,13 @@ public class Core : Game
         IsResizable = false;
         IsBorderless = false;
         IsMouseVisible = true;
-        SetMaxFPS(60);
+        SetFPSLimit(60);
 
         Content = base.Content;
-        Content.RootDirectory = @"Content";
+        Content.RootDirectory = contentDirectory;
 
-        InitScene = initScene;
+        CurrentScene = initScene;
+        CurrentScene.Load();
     }
 
     protected override void Initialize()
@@ -110,8 +177,7 @@ public class Core : Game
             new GamePadData(PlayerIndex.Four),
         ];
 
-        SceneManager = new SceneManager();
-        SceneManager.Switch(InitScene);
+        Random = new Random();
     }
 
     protected override void Update(GameTime gameTime)
@@ -119,12 +185,18 @@ public class Core : Game
         base.Update(gameTime);
         DeltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-        Mouse.Update(DeltaTime);
-        Keyboard.Update(DeltaTime);
-        for (int i = 0; i < GamePads.Length; i++)
-            GamePads[i].Update(DeltaTime);
+        if (IsActive)
+        {
+            Mouse.Update(DeltaTime);
+            Keyboard.Update(DeltaTime);
+            for (int i = 0; i < GamePads.Length; i++)
+                GamePads[i].Update(DeltaTime);
+        }
 
-        SceneManager.Update(DeltaTime);
+        InTransition?.Update(DeltaTime);
+        OutTransition?.Update(DeltaTime);
+        if (DoTransition) StartSceneTransition();
+        Scene.Update(DeltaTime);
     }
 
     protected override void Draw(GameTime gameTime)
@@ -132,9 +204,17 @@ public class Core : Game
         base.Draw(gameTime);
         GraphicsDevice.Clear(BackgroundColor);
         SpriteBatch.Begin(
-            SpriteSortMode.Deferred
+            SpriteSortMode.Deferred,
+            BlendState.AlphaBlend,
+            SamplerState.PointClamp,
+            DepthStencilState.None,
+            RasterizerState.CullCounterClockwise,
+            null,
+            Matrix.Identity
         );
-        SceneManager.Draw(SpriteBatch);
+        Scene.Draw(SpriteBatch);
+        InTransition?.Draw(SpriteBatch);
+        OutTransition?.Draw(SpriteBatch);
         SpriteBatch.End();
     }
 }

@@ -1,9 +1,15 @@
+# FOR TEST
+GuineasEngine.Test
+
 # VSCODE
 .vscode
 
 # CSHARP
 .config
 .editorconfig
+
+# MONOGAME
+.mgstats
 
 # BUILD
 bin

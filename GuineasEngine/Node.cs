@@ -4,7 +4,10 @@ namespace GuineasEngine;
 
 public class Node : IUpdateable, IDrawable, IDisposable
 {
+    private static int AvailableID = 0;
+
     public string Name = string.Empty;
+    public int ID = 0;
 
     public bool IsVisible { get; set; } = true;
 
@@ -12,6 +15,7 @@ public class Node : IUpdateable, IDrawable, IDisposable
     public Node(string name)
     {
         Name = name;
+        ID = AvailableID++;
         Children = [];
     }
 

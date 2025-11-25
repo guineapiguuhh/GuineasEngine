@@ -1,4 +1,3 @@
-using System.Globalization;
 using GuineasEngine.Utils.Math;
 using Microsoft.Xna.Framework;
 
