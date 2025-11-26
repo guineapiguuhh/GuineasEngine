@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace GuineasEngine.Graphics;
 
-public class TextureRegion
+public class TextureRegion : IDisposable
 {
     public readonly Texture2D Texture;
     public Rectangle Source;
@@ -74,5 +74,11 @@ public class TextureRegion
         texture.SetData(data);
 
         return new TextureRegion(texture);
+    }
+
+    public void Dispose()
+    {
+        Texture.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

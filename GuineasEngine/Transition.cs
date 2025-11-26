@@ -1,6 +1,6 @@
 using Microsoft.Xna.Framework.Graphics;
 
-namespace GuineasEngine.Components;
+namespace GuineasEngine;
 
 public enum TransitionState
 {

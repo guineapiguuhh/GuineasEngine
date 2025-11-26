@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace GuineasEngine.Components;
 
-public class Text : TransformNode, ISprite
+public class Text : Component
 {
     protected Font Font;
 
@@ -20,9 +20,6 @@ public class Text : TransformNode, ISprite
     public Color Color { get; set; } = Color.White;
     public SpriteEffects Effects { get; set; } = SpriteEffects.None;
 
-    public Text() : this("Text") {}
-    public Text(string name) : base(name) {}
-
     public void LoadFont(SpriteFont spriteFont) => LoadFont(new Font(spriteFont)); 
     public void LoadFont(Font font)
     {
@@ -36,15 +33,14 @@ public class Text : TransformNode, ISprite
             spriteBatch,
             Content,
             Align,
-            GlobalPosition,
+            Entity.Position,
             Color,
-            GlobalAngle,
+            Entity.Angle,
             Origin,
-            GlobalScale,
+            Entity.Scale,
             Effects,
             0f
         );
-        base.Draw(spriteBatch);
     }
 
     public void CenterOrigin()
@@ -56,7 +52,7 @@ public class Text : TransformNode, ISprite
     public void UpdateSize()
     {
         var size = Font.MeasureString(Content);
-        Width = size.X * Scale.X;
-        Height = size.Y * Scale.Y;
+        Width = size.X;
+        Height = size.Y;
     }
 }

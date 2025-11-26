@@ -4,10 +4,11 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace GuineasEngine.Components;
 
-public class Sprite : TransformNode, ISprite
+public class Sprite : Component
 {
     protected TextureRegion Texture;
 
+    public Vector2 Scale = Vector2.One;
     public float Width { get; set; } = 0f;
     public float Height { get; set; } = 0f;
 
@@ -15,8 +16,12 @@ public class Sprite : TransformNode, ISprite
     public Color Color { get; set; } = Color.White;
     public SpriteEffects Effects { get; set; } = SpriteEffects.None;
 
-    public Sprite() : this("Sprite") {}
-    public Sprite(string name) : base(name) {}
+    public Sprite() {}
+
+    public override void Removed()
+    {
+        Texture?.Dispose();
+    }
 
     public void LoadTexture(Texture2D texture) => LoadTexture(new TextureRegion(texture));
     public void LoadTexture(TextureRegion texture)
@@ -40,14 +45,13 @@ public class Sprite : TransformNode, ISprite
     {
         Texture?.Draw(
             spriteBatch,
-            GlobalPosition,
+            Entity.Position,
             Color,
-            GlobalAngle,
+            Entity.Angle,
             Origin,
-            GlobalScale,
+            Entity.Scale * Scale,
             Effects,
             0f
         );
-        base.Draw(spriteBatch);
     }
 }

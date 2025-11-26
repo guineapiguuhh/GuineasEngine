@@ -61,6 +61,8 @@ public class Core : Game
     static Scene CurrentScene { get; set; }
     static Scene NextScene { get; set; }
 
+    public static Scene InitScene { get; private set; }
+
     public static Scene Scene 
     { 
         get => CurrentScene;
@@ -157,8 +159,7 @@ public class Core : Game
         Content = base.Content;
         Content.RootDirectory = contentDirectory;
 
-        CurrentScene = initScene;
-        CurrentScene.Load();
+        InitScene = initScene;
     }
 
     protected override void Initialize()
@@ -178,6 +179,9 @@ public class Core : Game
         ];
 
         Random = new Random();
+
+        CurrentScene = InitScene;
+        CurrentScene.Load();
     }
 
     protected override void Update(GameTime gameTime)
