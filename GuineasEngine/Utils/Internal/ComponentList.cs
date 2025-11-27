@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using GuineasEngine.Utils.Collections;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -27,13 +26,10 @@ internal class ComponentList : IUpdateable, IDrawable
     public void Clear()
     {
         Entity = null;
-        for (int i = 0; i < Members.Count; i++)
-        {
-            Members[i].Entity = null;
-        }
+        for (int i = 0; i < Count; i++)
+            Remove(Members[i]);
+        QueueLists();
         Members.Clear();
-        MembersToAdd.Clear();
-        MembersToRemove.Clear();
     }
 
     public void Add(Component component)
@@ -47,36 +43,23 @@ internal class ComponentList : IUpdateable, IDrawable
         MembersToRemove.Add(component);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T Get<T>()
         where T : Component
     {
         for (int i = 0; i < Count; i++)
-        {
             if (Members[i] is T member) return member;
-        }
         return null;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Has<T>() 
         where T : Component
     {
         for (int i = 0; i < Count; i++)
-        {
             if (Members[i] is T) return true;
-        }
         return false;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void QueueMembers()
-    {
-        QueueMembersToRemove();
-        QueueMembersToAdd();
-    }
-
-    void QueueMembersToRemove()
+    public void QueueLists()
     {
         if (MembersToRemove.Count > 0)
         {
@@ -89,10 +72,7 @@ internal class ComponentList : IUpdateable, IDrawable
             }
             MembersToRemove.Clear();
         }
-    }
-
-    void QueueMembersToAdd()
-    {
+        
         if (MembersToAdd.Count > 0)
         {
             for (int i = 0; i < MembersToAdd.Count; i++)
@@ -106,22 +86,16 @@ internal class ComponentList : IUpdateable, IDrawable
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Update(float deltaTime)
     {
-        QueueMembers();
+        QueueLists();
         for (int i = 0; i < Count; i++)
-        {
-            Members[i].Update(deltaTime);
-        }
+            if (Members[i].IsActive) Members[i].Update(deltaTime);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Draw(SpriteBatch spriteBatch)
     {
-        for (int i = 0; i < Count; i++)
-        {
-            Members[i].Draw(spriteBatch);
-        }
+        for (int i = 0; i < Count; i++) 
+            if (Members[i].IsVisible && Members[i].IsActive) Members[i].Draw(spriteBatch);
     }
 }

@@ -1,5 +1,6 @@
 using GuineasEngine.Graphics;
 using GuineasEngine.Utils;
+using GuineasEngine.Utils.Math;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -7,16 +8,19 @@ namespace GuineasEngine.Components;
 
 public class Text : Component
 {
-    protected Font Font;
-
     public string Content = string.Empty;
 
+    protected Font Font;
     public HorizontalAlign Align = HorizontalAlign.Left;
 
     public float Width { get; set; } = 0f;
     public float Height { get; set ; } = 0f;
 
+    public Vector2 Position = Vector2.Zero;
+    public Vector2 Scale = Vector2.One;
     public Vector2 Origin = Vector2.Zero;
+    public float Angle = 0f;
+
     public Color Color { get; set; } = Color.White;
     public SpriteEffects Effects { get; set; } = SpriteEffects.None;
 
@@ -25,22 +29,6 @@ public class Text : Component
     {
         Font = font;
         UpdateSize();
-    }
-
-    public override void Draw(SpriteBatch spriteBatch)
-    {
-        Font?.Draw(
-            spriteBatch,
-            Content,
-            Align,
-            Entity.Position,
-            Color,
-            Entity.Angle,
-            Origin,
-            Entity.Scale,
-            Effects,
-            0f
-        );
     }
 
     public void CenterOrigin()
@@ -54,5 +42,22 @@ public class Text : Component
         var size = Font.MeasureString(Content);
         Width = size.X;
         Height = size.Y;
+    }
+
+    public override void Draw(SpriteBatch spriteBatch)
+    {
+        Font?.Draw(
+            spriteBatch,
+            Content,
+            Align,
+            Entity.Position 
+                + MathExtension.RotationTransformation(Position * Entity.Scale, Entity.Angle),
+            Color,
+            Entity.Angle + Angle,
+            Origin,
+            Entity.Scale * Scale,
+            Effects,
+            0f
+        );
     }
 }

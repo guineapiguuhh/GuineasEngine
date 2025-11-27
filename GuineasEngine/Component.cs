@@ -1,11 +1,13 @@
-using System.Runtime.InteropServices.Marshalling;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace GuineasEngine;
 
 public class Component : IUpdateable, IDrawable
 {
-    public Entity Entity;
+    public Entity Entity { get; internal set; }
+
+    public bool IsActive { get; set; } = true;
+    public bool IsVisible { get; set; } = true;
 
     public virtual void Ready() {}
 
@@ -15,11 +17,10 @@ public class Component : IUpdateable, IDrawable
 
     public virtual void Draw(SpriteBatch spriteBatch) {}
 
-    public virtual Component Clone()
+    public Component Clone()
     {
         var component = MemberwiseClone() as Component;
         component.Entity = null;
-
         return component;
     }
 

@@ -1,4 +1,4 @@
-using GuineasEngine.Utils.Collections;
+using GuineasEngine.Utils.Internal;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -6,12 +6,14 @@ namespace GuineasEngine;
 
 public abstract class Scene : IUpdateable, IDrawable, IDisposable
 {
+    readonly internal EntityList Entities;
     protected ContentManager Content;
-    internal FastList<Entity> Entities;
+
+    public bool IsDisposed { get; private set; } = false;
 
     public Scene()
     {
-        Entities = new FastList<Entity>();
+        Entities = new EntityList(this);
     }
     ~Scene() => Dispose(false);
 
@@ -23,50 +25,23 @@ public abstract class Scene : IUpdateable, IDrawable, IDisposable
 
     public virtual void Unload()
     {
-        Content.Unload();
         Entities.Clear();
+        Content.Unload();
     }
 
-    protected int? IndexOf(Entity entity)
-    {
-        for (int i = 0; i < Entities.Count; i++)
-        {
-            if (Entities[i] == entity) return i;
-        }
-        return null;
-    }
+    public int? IndexOf(Entity entity) => Entities.IndexOf(entity);
 
-    protected void Add(Entity entity) => Insert(Entities.Count, entity);
+    public Entity Get(int index) => Entities[index];
+
+    public void Add(Entity entity) => Entities.Add(entity);
     
-    protected void Insert(int index, Entity entity)
-    {
-        Entities.Insert(index, entity);
-        entity.QueueComponents();
-        entity.Scene = this;
-    }
+    public void Insert(int index, Entity entity) => Entities.Insert(index, entity);
 
-    protected void Remove(Entity entity)
-    {
-        Entities.Remove(entity);
-        entity.Scene = null;
-        entity.ClearComponents();
-    }
+    public void Remove(Entity entity) => Entities.Remove(entity);
 
-    public virtual void Update(float deltaTime)
-    {
-        for (int i = 0; i < Entities.Count; i++)
-        {
-            Entities[i].Update(deltaTime);
-        }
-    }
+    public virtual void Update(float deltaTime) => Entities.Update(deltaTime);
 
-    public virtual void Draw(SpriteBatch spriteBatch)
-    {
-        for (int i = 0; i < Entities.Count; i++)
-        {
-            Entities[i].Draw(spriteBatch);
-        }
-    }
+    public virtual void Draw(SpriteBatch spriteBatch) => Entities.Draw(spriteBatch);
 
     protected virtual void Dispose(bool disposing)
     {
@@ -75,6 +50,7 @@ public abstract class Scene : IUpdateable, IDrawable, IDisposable
             Unload();
             Content?.Dispose();
         }
+        IsDisposed = true;
     }
 
     public void Dispose()

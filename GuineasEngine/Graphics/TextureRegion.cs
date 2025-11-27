@@ -6,7 +6,7 @@ namespace GuineasEngine.Graphics;
 public class TextureRegion : IDisposable
 {
     public readonly Texture2D Texture;
-    public Rectangle Source;
+    public Rectangle SourceRectangle;
 
     public readonly int Width;
     public readonly int Height;
@@ -22,7 +22,7 @@ public class TextureRegion : IDisposable
         Texture = texture;
         Width = Texture.Width;
         Height = Texture.Height;
-        Source = source;
+        SourceRectangle = source;
     }
 
     public void Draw(
@@ -50,7 +50,7 @@ public class TextureRegion : IDisposable
         spriteBatch.Draw(
             Texture,
             position,
-            Source,
+            SourceRectangle,
             color,
             angle,
             origin,

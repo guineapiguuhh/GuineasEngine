@@ -6,9 +6,9 @@ using GuineasEngine.Components;
 
 namespace GuineasEngine;
 
-public class Entity : IUpdateable, IDrawable
+public class Entity : IUpdateable, IDrawable, IDisposable
 {
-    private static uint _availableID = 0;
+    private static uint _availableId = 0;
 
     public string Name = string.Empty;
     public uint ID = 0;
@@ -20,14 +20,19 @@ public class Entity : IUpdateable, IDrawable
     public Vector2 Scale = Vector2.One;
     public float Angle = 0f;
 
+    public bool IsActive { get; set; } = true;
+    public bool IsVisible { get; set; } = true;
+
+    public bool IsDisposed { get; private set; } = false;
+
     public Entity(string name)
     {
         Name = name;
-        ID = _availableID++;
+        ID = _availableId++;
         Components = new ComponentList(this);
     }
 
-    public void QueueComponents() => Components.QueueMembers();
+    public void QueueComponents() => Components.QueueLists();
 
     public void ClearComponents() => Components.Clear();
 
@@ -64,18 +69,28 @@ public class Entity : IUpdateable, IDrawable
     public T GetComponent<T>()
         where T : Component => Components.Get<T>();
 
-    public virtual void Update(float deltaTime)
+    public virtual void Update(float deltaTime) => Components.Update(deltaTime);
+
+    public virtual void Draw(SpriteBatch spriteBatch) => Components.Draw(spriteBatch);
+
+    public override string ToString() => $"{GetType().Name}({Name})";
+
+    protected virtual void Dispose(bool disposing)
     {
-        Components.Update(deltaTime);
+        if (IsDisposed) return;
+
+        if (disposing)
+        {
+            ClearComponents();
+            Scene.Remove(this);
+            Scene = null;
+        }
+        IsDisposed = true;
     }
 
-    public virtual void Draw(SpriteBatch spriteBatch)
+    public void Dispose()
     {
-        Components.Draw(spriteBatch);
-    }
-
-    public override string ToString()
-    {
-        return $"{GetType().Name}({Name})";
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 }
