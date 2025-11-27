@@ -3,10 +3,10 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace GuineasEngine.Graphics;
 
-public class TextureRegion
+public class TextureRegion : IDisposable
 {
     public readonly Texture2D Texture;
-    public Rectangle Source;
+    public Rectangle SourceRectangle;
 
     public readonly int Width;
     public readonly int Height;
@@ -22,7 +22,7 @@ public class TextureRegion
         Texture = texture;
         Width = Texture.Width;
         Height = Texture.Height;
-        Source = source;
+        SourceRectangle = source;
     }
 
     public void Draw(
@@ -50,7 +50,7 @@ public class TextureRegion
         spriteBatch.Draw(
             Texture,
             position,
-            Source,
+            SourceRectangle,
             color,
             angle,
             origin,
@@ -74,5 +74,11 @@ public class TextureRegion
         texture.SetData(data);
 
         return new TextureRegion(texture);
+    }
+
+    public void Dispose()
+    {
+        Texture.Dispose();
+        GC.SuppressFinalize(this);
     }
 }
