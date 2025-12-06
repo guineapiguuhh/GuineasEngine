@@ -5,60 +5,82 @@ namespace GuineasEngine.Utils.Internal;
 
 internal class EntityList : IUpdateable, IDrawable
 {
-    Scene Scene;
-
-    readonly FastList<Entity> Members;
-
+    protected FastList<Entity> Members;
     public int Count => Members.Count;
+
+    protected List<KeyValuePair<int, Entity>> RequestedToInsert;
+    protected List<Entity> RequestedToRemove;
+
     public Entity this[int index] => Members[index];
 
-    public EntityList(Scene scene)
+    public EntityList()
     {
-        Scene = scene;
         Members = new FastList<Entity>();
+        RequestedToInsert = [];
+        RequestedToRemove = [];
     }
 
-    public void Clear()
+    public virtual void Clear()
     {
-        Scene = null;
         Members.Clear();
+        RequestedToInsert.Clear();
+        RequestedToRemove.Clear();
     }
 
-    public int? IndexOf(Entity entity)
+    public int IndexOf(Entity item)
     {
-        for (int i = 0; i < Count; i++)
+        for (int i = 0; i < Members.Count; i++)
         {
-            if (Members[i] == entity) 
-                return i;
+            if (Members[i] == item) return i;
         }
-        return null;
+        return -1;
     }
 
-    public void Add(Entity entity) => Insert(Count, entity);
+    public void Contains(Entity item) => Members.Contains(item);
 
-    public void Insert(int index, Entity entity)
+    public void Add(Entity item) => Insert(Count, item);
+
+    public void Insert(int index, Entity item) => RequestedToInsert.Add(new KeyValuePair<int, Entity>(index, item));
+
+    public void Remove(Entity item) => RequestedToRemove.Add(item);
+
+    public void ResolveRequests()
     {
-        entity.QueueComponents();
-        entity.Scene = Scene;
-        Members.Insert(index, entity);
+        if (RequestedToInsert.Count > 0)
+        {
+            for (int i = 0; i < RequestedToInsert.Count; i++)
+            {
+                var requested = RequestedToInsert[i];
+                Members.Insert(requested.Key, requested.Value);
+            }
+            RequestedToInsert.Clear();
+        }
+
+        if (RequestedToRemove.Count > 0)
+        {
+            for (int i = 0; i < RequestedToRemove.Count; i++)
+            {
+                var requested = RequestedToRemove[i];
+                Members.Remove(requested);
+            }
+            RequestedToRemove.Clear();
+        }
     }
 
-    public void Remove(Entity entity) 
+    public virtual void Update(float deltaTime) 
     {
-        entity.ClearComponents();
-        entity.Scene = null;
-        Members.Remove(entity);
-    }
-
-    public void Update(float deltaTime)
-    {
-        for (int i = 0; i < Count; i++)
-            if (Members[i].IsActive) Members[i].Update(deltaTime);
+        ResolveRequests();
+        for (int i = 0; i < Members.Count; i++)
+        {
+            Members[i].Update(deltaTime);
+        }
     }
 
     public void Draw(SpriteBatch spriteBatch)
     {
-        for (int i = 0; i < Count; i++)
-            if (Members[i].IsVisible && Members[i].IsActive) Members[i].Draw(spriteBatch);
+        for (int i = 0; i < Members.Count; i++)
+        {
+            Members[i].Draw(spriteBatch);
+        }
     }
 }

@@ -17,7 +17,7 @@ public abstract class Scene : IUpdateable, IDrawable, IDisposable
 
     public Scene()
     {
-        Entities = new EntityList(this);
+        Entities = new EntityList();
         Timers = new FastList<Timer>();
     }
     ~Scene() => Dispose(false);
@@ -35,15 +35,24 @@ public abstract class Scene : IUpdateable, IDrawable, IDisposable
         Content.Unload();
     }
 
-    public int? IndexOf(Entity entity) => Entities.IndexOf(entity);
+    public int IndexOf(Entity entity) => Entities.IndexOf(entity);
 
     public Entity Get(int index) => Entities[index];
 
-    public void Add(Entity entity) => Entities.Add(entity);
+    public void Add(Entity entity) => Insert(Entities.Count, entity);
     
-    public void Insert(int index, Entity entity) => Entities.Insert(index, entity);
+    public void Insert(int index, Entity entity) 
+    {
+        entity.Scene = this;
+        Entities.Insert(index, entity);
+    }
 
-    public void Remove(Entity entity) => Entities.Remove(entity);
+    public void Remove(Entity entity) 
+    {
+        if (entity.Scene == this)
+            entity.Scene = null;
+        Entities.Remove(entity);
+    }
 
     public virtual void Update(float deltaTime) 
     {
