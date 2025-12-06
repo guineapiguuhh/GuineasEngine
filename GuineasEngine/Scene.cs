@@ -31,6 +31,7 @@ public abstract class Scene : IUpdateable, IDrawable, IDisposable
     public virtual void Unload()
     {
         Entities.Clear();
+        Timers.Clear();
         Content.Unload();
     }
 
