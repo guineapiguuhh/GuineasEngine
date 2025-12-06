@@ -22,6 +22,12 @@ public abstract class Scene : IUpdateable, IDrawable, IDisposable
     }
     ~Scene() => Dispose(false);
 
+    public void Initialize()
+    {
+        Load();
+        Entities.ResolveRequests();
+    }
+
     public virtual void Load()
     {
         Content = new ContentManager(Core.Content.ServiceProvider);
@@ -44,13 +50,14 @@ public abstract class Scene : IUpdateable, IDrawable, IDisposable
     public void Insert(int index, Entity entity) 
     {
         entity.Scene = this;
+        entity.ResolveComponents();
         Entities.Insert(index, entity);
     }
 
     public void Remove(Entity entity) 
     {
-        if (entity.Scene == this)
-            entity.Scene = null;
+        if (entity.Scene != this) return;
+        entity.Scene = null;
         Entities.Remove(entity);
     }
 

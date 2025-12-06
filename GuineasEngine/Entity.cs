@@ -1,8 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using GuineasEngine.Utils.Internal;
-using System.Runtime.CompilerServices;
-using GuineasEngine.Components;
 
 namespace GuineasEngine;
 
@@ -32,7 +30,7 @@ public class Entity : IUpdateable, IDrawable, IDisposable
         Components = new ComponentList(this);
     }
 
-    public void QueueComponents() => Components.QueueLists();
+    public void ResolveComponents() => Components.ResolveRequests();
 
     public void ClearComponents() => Components.Clear();
 

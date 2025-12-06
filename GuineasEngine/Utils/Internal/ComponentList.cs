@@ -5,97 +5,103 @@ namespace GuineasEngine.Utils.Internal;
 
 internal class ComponentList : IUpdateable, IDrawable
 {
-    Entity Entity;
+    protected Entity Entity;
 
-    readonly FastList<Component> Members;
-
+    protected FastList<Component> Members;
     public int Count => Members.Count;
-    public Component this[int index] => Members[index];
 
-    readonly List<Component> MembersToAdd;
-    readonly List<Component> MembersToRemove;
+    protected List<Component> RequestedToAdd;
+    protected List<Component> RequestedToRemove;
 
     public ComponentList(Entity entity)
     {
         Entity = entity;
         Members = new FastList<Component>();
-        MembersToAdd = [];
-        MembersToRemove = [];
+        RequestedToAdd = [];
+        RequestedToRemove = [];
     }
-    
-    public void Clear()
+
+    public virtual void Clear()
     {
         Entity = null;
-        for (int i = 0; i < Count; i++)
-            Remove(Members[i]);
-        QueueLists();
         Members.Clear();
+        RequestedToAdd.Clear();
+        RequestedToRemove.Clear();
     }
 
-    public void Add(Component component)
+    public void Add(Component item) 
     {
-        MembersToAdd.Add(component);
+        item.Entity = Entity;
+        RequestedToAdd.Add(item);
     }
 
-    public void Remove(Component component) 
+    public void Remove(Component item) 
     {
-        MembersToAdd.Remove(component);
-        MembersToRemove.Add(component);
+        if (item.Entity != Entity) return;
+        item.Entity = null;
+        RequestedToAdd.Remove(item);
+        RequestedToRemove.Add(item);
     }
 
     public T Get<T>()
         where T : Component
     {
-        for (int i = 0; i < Count; i++)
+        for (int i = 0; i < Members.Count; i++)
+        {
             if (Members[i] is T member) return member;
+        }
         return null;
     }
 
-    public bool Has<T>() 
+    public bool Has<T>()
         where T : Component
     {
-        for (int i = 0; i < Count; i++)
+        for (int i = 0; i < Members.Count; i++)
+        {
             if (Members[i] is T) return true;
+        }
         return false;
     }
 
-    public void QueueLists()
+    public void ResolveRequests()
     {
-        if (MembersToRemove.Count > 0)
+        if (RequestedToRemove.Count > 0)
         {
-            for (int i = 0; i < MembersToRemove.Count; i++)
+            for (int i = 0; i < RequestedToRemove.Count; i++)
             {
-                var requested = MembersToRemove[i];
-                requested.Entity = null;
+                var requested = RequestedToRemove[i];
                 requested.Removed();
                 Members.Remove(requested);
             }
-            MembersToRemove.Clear();
+            RequestedToRemove.Clear();
         }
-        
-        if (MembersToAdd.Count > 0)
+
+        if (RequestedToAdd.Count > 0)
         {
-            for (int i = 0; i < MembersToAdd.Count; i++)
+            for (int i = 0; i < RequestedToAdd.Count; i++)
             {
-                var requested = MembersToAdd[i];
-                requested.Entity = Entity;
+                var requested = RequestedToAdd[i];
                 requested.Ready();
                 Members.Add(requested);
             }
-            MembersToAdd.Clear();
+            RequestedToAdd.Clear();
         }
     }
 
-    public void Update(float deltaTime)
+    public virtual void Update(float deltaTime) 
     {
-        QueueLists();
-        for (int i = 0; i < Count; i++)
-            if (Members[i].IsActive) Members[i].Update(deltaTime);
+        ResolveRequests();
+        for (int i = 0; i < Members.Count; i++)
+        {
+            Members[i].Update(deltaTime);
+        }
     }
 
-    public void Draw(SpriteBatch spriteBatch)
+    public virtual void Draw(SpriteBatch spriteBatch)
     {
-        for (int i = 0; i < Count; i++) 
-            if (Members[i].IsVisible && Members[i].IsActive) Members[i].Draw(spriteBatch);
+        for (int i = 0; i < Members.Count; i++)
+        {
+            Members[i].Draw(spriteBatch);
+        }
     }
 }

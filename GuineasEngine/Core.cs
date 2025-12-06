@@ -80,7 +80,7 @@ public class Core : Game
         GC.Collect();
 
         CurrentScene = scene;
-        CurrentScene.Load();
+        CurrentScene.Initialize();
     }
 
     static Transition _inTransition { get; set; }
@@ -181,7 +181,7 @@ public class Core : Game
         Random = new Random();
 
         CurrentScene = InitScene;
-        CurrentScene.Load();
+        CurrentScene.Initialize();
     }
 
     protected override void Update(GameTime gameTime)
