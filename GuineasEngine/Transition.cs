@@ -21,6 +21,11 @@ public abstract class Transition : IUpdateable, IDrawable
     public float Duration = 0f;
     public float Progress { get; private set; } = 0f;
 
+    public float Percent => Progress * 100f;
+
+    public float CurrentTime => Duration * Progress;
+    public float TimeLeft => Duration - CurrentTime;
+    
     public bool Reverse = false;
 
     public virtual void Load() {}

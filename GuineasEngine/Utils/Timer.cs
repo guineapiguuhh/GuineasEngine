@@ -31,7 +31,6 @@ public class Timer : IUpdateable
     public float CurrentTime => Duration * Progress;
     public float TimeLeft => Duration - CurrentTime;
 
-
     public Timer(float duration) : this(duration, 0) {}
 
     public Timer(float duration, int loops)
