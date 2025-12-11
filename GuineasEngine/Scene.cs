@@ -22,12 +22,6 @@ public abstract class Scene : IUpdateable, IDrawable, IDisposable
     }
     ~Scene() => Dispose(false);
 
-    public void Initialize()
-    {
-        Load();
-        Entities.ResolveRequests();
-    }
-
     public virtual void Load()
     {
         Content = new ContentManager(Core.Content.ServiceProvider);

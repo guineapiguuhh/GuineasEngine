@@ -5,69 +5,60 @@ namespace GuineasEngine;
 public enum TransitionState
 {
     Playing,
-    Paused,
     Stopped
 }
 
 public abstract class Transition : IUpdateable, IDrawable
 {
-    public event EventHandler OnPlay;
-    public event EventHandler OnStop;
+    private float _transitionCounter = 0f;
 
-    public float Duration { get; set; } = 0f;
-    public float Progress { get; private set; } = 0f;
-
-    public bool Reverse { get; set; } = false;
+    public event Action<Transition> OnStart;
+    public event Action<Transition> OnProgress;
+    public event Action<Transition> OnComplete;
 
     public TransitionState State { get; private set; } = TransitionState.Stopped;
+
+    public float Duration = 0f;
+    public float Progress { get; private set; } = 0f;
+
+    public bool Reverse = false;
 
     public virtual void Load() {}
     public virtual void Unload() {}
 
-    public virtual void Play()
+    public virtual void Start()
     {
-        if (State == TransitionState.Playing) return;
-
+        if (State != TransitionState.Stopped) return;
         State = TransitionState.Playing;
-        Progress = Reverse ? Duration : 0f;
-
-        OnPlay?.Invoke(this, EventArgs.Empty);
+        OnStart?.Invoke(this);
     }
 
     public virtual void Stop()
     {
-        if (State == TransitionState.Stopped) return;
-
-        State = TransitionState.Stopped;
-        Progress = 0f; // Best QOL ever
-
-        OnStop?.Invoke(this, EventArgs.Empty);
-    }
-
-    public virtual void Resume()
-    {
-        if (State == TransitionState.Stopped) return;
-        State = TransitionState.Playing;
-    }
-
-    public virtual void Pause()
-    {
         if (State != TransitionState.Playing) return;
-        State = TransitionState.Paused;
+        State = TransitionState.Stopped;
+        _transitionCounter = 0f;
+        Progress = 0f;
     }
 
     public virtual void Update(float deltaTime)
     {
         if (State != TransitionState.Playing) return;
-        if (Reverse)
+        _transitionCounter += deltaTime;
+
+        Progress = float.Min(_transitionCounter / Duration, 1f);
+        if (Reverse) Progress = 1f - Progress;
+        if ((!Reverse && Progress >= 1f) || (Reverse && Progress <= 0f))
         {
-            Progress -= deltaTime;
-            if (Progress <= 0f) Stop();
+            Stop();
+            OnComplete?.Invoke(this);
             return;
         }
-        Progress += deltaTime;
-        if (Progress >= Duration) Stop();
+        OnProgress?.Invoke(this);
     }
 
     public virtual void Draw(SpriteBatch spriteBatch) {}
+
+    public Transition Clone()
+        => MemberwiseClone() as Transition;
 }

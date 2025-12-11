@@ -76,11 +76,11 @@ public class Core : Game
 
     static void SetScene(Scene scene) 
     {
-        CurrentScene.Dispose();
+        CurrentScene?.Dispose();
         GC.Collect();
 
         CurrentScene = scene;
-        CurrentScene.Initialize();
+        CurrentScene.Load();
     }
 
     static Transition _inTransition { get; set; }
@@ -89,14 +89,15 @@ public class Core : Game
         get => _inTransition;
         set
         {
-            if (_inTransition == value) return;
-            _inTransition?.Unload();
             _inTransition = value;
+            if (value is null) return;
+            _inTransition = value.Clone();
             _inTransition.Load();
-            _inTransition.OnStop += (_, _) => {
+            _inTransition.OnComplete += (_) =>
+            {
                 SetScene(NextScene);
                 NextScene = null;
-                OutTransition?.Play();
+                OutTransition?.Start();
             };
         } 
     }
@@ -107,9 +108,9 @@ public class Core : Game
         get => _outTransition;
         set
         {
-            if (_outTransition == value) return;
-            _outTransition?.Unload();
             _outTransition = value;
+            if (value is null) return;
+            _outTransition = value.Clone();
             _outTransition.Load();
             _outTransition.Reverse = true;
         } 
@@ -124,10 +125,10 @@ public class Core : Game
         {
             SetScene(NextScene);
             NextScene = null;
-            OutTransition?.Play();
+            OutTransition?.Start();
             return;
         }
-        InTransition?.Play();
+        InTransition?.Start();
     }
     
     public static void SetFPSLimit(double max)
@@ -179,9 +180,8 @@ public class Core : Game
         ];
 
         Random = new Random();
-
-        CurrentScene = InitScene;
-        CurrentScene.Initialize();
+        
+        SetScene(InitScene);
     }
 
     protected override void Update(GameTime gameTime)
